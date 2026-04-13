@@ -4,7 +4,7 @@
     "slug": "appDriver",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./src/assets/icon.png",
     "scheme": "appdriver",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

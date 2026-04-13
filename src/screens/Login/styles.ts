@@ -1,0 +1,102 @@
+import { StyleSheet } from "react-native";
+import Colors from "../../constants/Color";
+
+export const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
+    backgroundColor: "#FFFFFF",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 30,
+    paddingTop: '11%',
+  },
+  backButton: {
+    padding: 8,
+    fontSize: 26,
+    zIndex: 2,
+  },
+  title: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginLeft: -26,
+    color: Colors.primary_background,
+  },
+  title2: {
+    fontSize: 14,
+    color: Colors.primary_background,
+    textAlign: "left",
+    marginBottom: 20,
+  },
+  title3:{
+    fontSize:20,
+    color: Colors.primary_background,
+    textAlign: "left",
+    marginBottom: 20,
+    fontWeight: '700',
+  },
+  body: {
+    flex: 1,
+    justifyContent: "center",
+    width: "100%",
+    marginBottom: 20,
+  },
+  textInput: {
+    fontSize: 16,
+    marginBottom: "3%",
+    color: "#1976d2",
+    paddingLeft: '8%',
+  },
+  input: {
+    width: "100%",
+    fontSize: 16,
+    alignSelf: "center",
+    color: Colors.primary_background,
+    padding: 12,
+    marginBottom: '5%',  
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: Colors.border_avt2,
+  },
+  button: {
+    backgroundColor: Colors.secondary_background,
+    width: "100%",
+    height: 40,
+    alignItems: "center",
+    alignSelf: "center",
+    justifyContent: "center",
+    borderRadius: 5,
+    marginBottom:10,
+    marginTop: 30,
+  },
+  buttonText: {
+    color: Colors.primary_background,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  link1: {
+    color: '#a8a8a8',
+    fontSize: 14,
+    textAlign: "center",
+    marginTop: 5,
+  },
+  link2: {
+    color: Colors.blue,
+    fontSize: 14,
+    textAlign: "center",
+    marginTop: 5,
+    textDecorationLine: "underline",
+  },
+  errorText: {
+    color: Colors.error_text,
+    fontSize: 12,
+    alignSelf: "flex-start",
+    marginLeft: '2%',
+    marginBottom: 5,
+  },
+});
