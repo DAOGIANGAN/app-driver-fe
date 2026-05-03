@@ -27,7 +27,7 @@ const Splash: React.FC<Props> = ({ navigation }) => {
                 try {
                     const response = await apiClient.get("/auth/is-logged-in", {
                         headers: {
-                            Authorization: `Bearer ${refreshToken}`
+                            Authorization: `Bearer ${refreshToken}`,
                         }
                     });
                     const data = await response.data;

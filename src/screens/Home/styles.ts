@@ -1,5 +1,5 @@
 import Colors from '@/src/constants/Color';
-import { StatusBar, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
   container: { 
@@ -11,7 +11,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row', 
     alignItems: 'center', 
     marginBottom: 16 , 
-    marginTop: StatusBar.currentHeight || 0,
   },
   username: { 
     fontSize: 14, 

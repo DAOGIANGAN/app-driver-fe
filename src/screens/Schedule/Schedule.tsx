@@ -204,7 +204,7 @@ const ScheduleScreen: React.FC<Props> = ({ navigation }) => {
                 style={[styles.modalButton, styles.saveModalButton]}
                 onPress={handleSaveNewSubject}
               >
-                <Text style={styles.modalButtonText}>Lưu</Text>
+                <Text style={{fontSize: 15, fontWeight: 'bold', color: Colors.primary_background }}>Lưu</Text>
               </TouchableOpacity>
             </View>
           </View>

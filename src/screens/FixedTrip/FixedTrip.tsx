@@ -249,19 +249,25 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
         </TouchableOpacity>
       </View>
       {searchResults.length > 0 ? (
+        <View style={{ flex: 1, backgroundColor: Colors.link }}>
         <FlatList
           style={styles.searchResultsContainer}
           data={searchResults}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity style={styles.searchResultItem} onPress={() => handleSelectUser(item.user.id)}>
-              <Text>{item.username}</Text>
+                <Image
+                  source={(item.urlPublicAvatar) ? { uri: item.urlPublicAvatar } : require('./../../assets/user1.png')}
+                  style={styles.Avt}
+                />
+              <Text style={{fontWeight: 'bold', color: Colors.primary_background}}>{item.username}</Text>
             </TouchableOpacity>
           )}
           keyboardShouldPersistTaps="handled"
         />
+        </View>
       ) : (
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, backgroundColor: Colors.link }}>
         {isPage1 ? (
           <ScrollView
             style={{ flex: 1, backgroundColor: Colors.link }}
@@ -287,7 +293,7 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
                       <Text style={styles.buttonText}>Đăng ký</Text>
                     </TouchableOpacity>
                   </View>
-                )) : <Text style={styles.noDataText}>No matching trips found.</Text>
+                )) : <Text style={styles.noDataText}>Không có lịch trùng.</Text>
               )}
             </View>
           </ScrollView>
@@ -338,7 +344,7 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
                     </View>                   
                   </View>
                 </View>
-              )) : <Text style={styles.noDataText}>You have not received any requests.</Text>}
+              )) : <Text style={styles.noDataText}>Bạn chưa nhận được yêu cầu nào.</Text>}
             </View>
           </ScrollView>
           )}

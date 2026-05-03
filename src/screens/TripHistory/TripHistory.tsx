@@ -1,5 +1,6 @@
 import Colors from '@/src/constants/Color';
 import apiClient from '@/src/networking/apiclient';
+import ProfileService from '@/src/services/profile.service';
 import TokenService from '@/src/services/token.service';
 import { Ionicons } from "@expo/vector-icons";
 import { NavigationProp } from '@react-navigation/native';
@@ -29,6 +30,15 @@ type Props = {
 const TripHistory : React.FC<Props> = ({ navigation }) => {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const getUserId = async () => {
+      const id = await ProfileService.getUserId();
+      setUserId(id);
+    };
+    getUserId();
+  }, []);
 
   function formatDateTime(date: Date | string | null) {
     if (!date) return '';
@@ -115,13 +125,15 @@ const TripHistory : React.FC<Props> = ({ navigation }) => {
                 <TouchableOpacity style = {{flexDirection: 'row', alignItems: 'center'}}>
                   <Text style={styles.driverLink}>SĐT: {item.driver.phone} </Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.blockButton, item.isBlocked && { backgroundColor: '#dddddd' }]}
-                  onPress={() => handleBlock(item.driver.id)}
-                  disabled={item.isBlocked}
-                >
+                {userId !== item.driver.id && (
+                  <TouchableOpacity
+                    style={[styles.blockButton, item.isBlocked && { backgroundColor: '#dddddd' }]}
+                    onPress={() => handleBlock(item.driver.id)}
+                    disabled={item.isBlocked}
+                  >
                   <Text style={styles.createTripButtonText}>{item.isBlocked ? 'Đã chặn' : 'Chặn tài xế'}</Text>
-                </TouchableOpacity>                
+                </TouchableOpacity> 
+                )}               
               </View>
             </View>
   );

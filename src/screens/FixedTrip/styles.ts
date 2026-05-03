@@ -115,19 +115,20 @@ const styles = StyleSheet.create({
     top: 15,
   },
   searchResultsContainer: {
+    marginHorizontal: 16,
     maxHeight: 200,
-    borderColor: '#ccc',
+    borderColor: Colors.secondary_background,
     borderWidth: 1,
     borderRadius: 8,
-    backgroundColor: '#fff',
-    position: 'absolute',
-    top: 65, // Position below the search bar
-    left: 0,
-    right: 0,
+    backgroundColor: '#ffffff',
+    top: -50, // Position below the search bar
     zIndex: 1,
   },
   searchResultItem: {
-    padding: 15,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
@@ -171,6 +172,14 @@ const styles = StyleSheet.create({
     color: '#535353',
     fontSize: 14,
   },
+  Avt: {
+    width: 45, 
+    height: 45,
+    borderRadius: 30,
+    borderWidth: 2,
+    borderColor: Colors.background_avatar,
+    marginRight: 10,
+  }
 });
 
 export default styles;

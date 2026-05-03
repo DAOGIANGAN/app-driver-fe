@@ -5,8 +5,10 @@ import TokenService from '@/src/services/token.service';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker'; // Cần cài: npm install @react-native-picker/picker
 import { NavigationProp, useFocusEffect } from '@react-navigation/native';
+import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
-import { FlatList, Image, ImageBackground, Platform, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, ImageBackground, Platform, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { io } from 'socket.io-client';
 import styles from './styles';
 
@@ -32,10 +34,11 @@ type Props = {
   navigation: NavigationProp<any>;
 };
 
-const locations = ['GD2', 'G2', 'GD3', 'GD4', 'E3'];
+const locations = ['GĐ2', 'G2', 'GĐ3', 'GĐ4', 'E3'];
 const slots = ['1', '2', '3', '4', '5', '6', '7'];
 
 const Home: React.FC<Props> = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState(''); // của người dùng
   const [userId, setUserId] = useState<number | null>(null);
 
@@ -73,6 +76,12 @@ useEffect(() => {
       fetchMyTrip(); // Cập nhật lại chuyến đi của bạn
     });
 
+    // Khi chuyến bị hủy, gửi cho cả room
+    socket.on('tripCanceled', (data: { message: string; tripId: string; userId: string }) => {
+      alert(data.message);
+      // TODO: Điều hướng về trang khác nếu cần
+    });
+
     // Cleanup khi unmount
     return () => {
       socket.disconnect();
@@ -92,17 +101,6 @@ useEffect(() => {
       minute: '2-digit',
       //timeZone: 'UTC',
     });
-  }
-
-  function buildDepartureTime(hour: string, baseDate?: string) {
-    // Nếu có ngày truyền vào thì dùng, không thì lấy hôm nay
-    const date = baseDate ? new Date(baseDate) : new Date();
-    const [h, m] = hour.split(':');
-    date.setUTCHours(Number(h));
-    date.setUTCMinutes(Number(m));
-    date.setUTCSeconds(0);
-    date.setUTCMilliseconds(0);
-    return date.toISOString();
   }
 
   const handleTimeChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
@@ -161,19 +159,20 @@ useEffect(() => {
 
   //Hàm lấy tên và ảnh đại diện của người dùng
   const fetchUserProfile = async () => {
+    console.log("Fetching user profile...");
     const Name = await ProfileService.getName(); 
-    setName(Name || '');
+    console.log("User name:", Name); 
+    setName(Name|| ''); // Nếu không lấy được tên, để trống
   };
 
   // Lấy dữ liệu chuyến đi của mình khi mở trang
   useFocusEffect(
     React.useCallback(() => {
+      fetchUserProfile();
       fetchMyTrip();
       fetchTrips();
-      fetchUserProfile();
     }, [])
   );
-
   
   // Lấy dữ liệu các chuyến đi từ backend khi mở trang
   const fetchTrips = async () => {
@@ -223,9 +222,9 @@ useEffect(() => {
       style={{flex: 1}}
       resizeMode="cover" // 'cover' để ảnh phủ hết nền, 'stretch' để kéo dãn
     >
-      <View style={styles.container}>
+      <StatusBar style="dark" translucent backgroundColor="transparent" />
+      <View style={[styles.container, { paddingTop: insets.top }]}> 
         {/* Khung ảnh người dùng */}
-        <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
         <View style={styles.profileContainer}>
           <Text style={styles.username}>Chào {name} !</Text>
         </View>

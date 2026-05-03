@@ -13,11 +13,13 @@ const Loading: React.FC = () => {
     const loadData = async () => {
       try {
         const response = await ProfileApi.getProfile();
-        ProfileService.saveProfile(response);
+        await ProfileService.saveProfile(response);
+
         // await connectSocket();
 
         // Reset điều hướng
         if (navigationRef.isReady()) {
+          console.log('Response:', response);
           navigationRef.reset({
             index: 0,
             routes: [{ name: 'Home' }],

@@ -19,7 +19,7 @@ type Props = {
     navigation: NavigationProp<any>; 
 };
 
-const locations = ['GD2', 'G2', 'GD3', 'GD4', 'E3'];
+const locations = ['GĐ2', 'G2', 'GĐ3', 'GĐ4', 'E3'];
 const slots = ['1', '2', '3', '4', '5', '6', '7'];
 
 const TripDetail: React.FC<Props> = ({ navigation }) => {
@@ -124,7 +124,7 @@ const TripDetail: React.FC<Props> = ({ navigation }) => {
       // Nếu chỉ có customerId: thông báo cho cả room
       // Nếu có cả tripId và customerId: thông báo riêng cho tài xế
       console.log('Khách mới:', data);
-      alert(`Khách hàng ID ${data.customerId} đã tham gia chuyến.`);
+      alert(`Khách hàng mới đã đăng ký tham gia chuyến.`);
       refreshTrip();
       // TODO: Gọi API hoặc cập nhật lại UI nếu cần
     });
@@ -140,9 +140,16 @@ const TripDetail: React.FC<Props> = ({ navigation }) => {
     // Khi chuyến bị hủy, gửi cho cả room
     socket.on('tripCanceled', (data: { message: string; tripId: string; userId: string }) => {
       alert(data.message);
-      navigation.goBack();
+      if(userId.toString() != data.userId) navigation.goBack();
       // TODO: Điều hướng về trang khác nếu cần
     });
+
+    // Khi chuyến bị hủy, gửi cho cả room
+    socket.on('tripOut', (data: { message: string; tripId: string; userId: string }) => {
+      alert(data.message);
+      refreshTrip();
+      // TODO: Điều hướng về trang khác nếu cần
+    });    
 
     // Cleanup khi unmount
     return () => {
@@ -226,6 +233,10 @@ const TripDetail: React.FC<Props> = ({ navigation }) => {
   // Dummy handlers
   const handleApprove = async (customerId: number) => {
     try {
+      if(trip.approvedCustomers.length >= trip.slot) {
+        alert('Số khách đã đủ, không thể duyệt thêm!');
+        return;
+      }
       const accessToken = await TokenService.getAccessToken();
       console.log('Duyệt khách hàng ID:', customerId, 'cho chuyến ID:', trip.id);
       const response = await apiClient.post(
@@ -238,7 +249,6 @@ const TripDetail: React.FC<Props> = ({ navigation }) => {
         }
       );
       // Sau khi duyệt thành công, nên gọi lại API lấy trip mới hoặc cập nhật state
-      alert(`Duyệt khách hàng ID: ${customerId} thành công!`);
       refreshTrip();
     } catch (error: any) {
       console.error('Lỗi duyệt khách hàng:', error?.response?.data || error);

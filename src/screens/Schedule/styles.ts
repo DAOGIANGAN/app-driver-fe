@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     height: 45,
     borderColor: '#ddd',
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 8,
     paddingHorizontal: 10,
     marginBottom: 10,
   },
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   modalButton: {
     flex: 1,
     padding: 12,
-    borderRadius: 5,
+    borderRadius: 8,
     alignItems: 'center',
     marginHorizontal: 5,
   },
@@ -164,11 +164,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#aaa',
   },
   saveModalButton: {
-    backgroundColor: '#1976d2',
+    backgroundColor: Colors.secondary_background,
   },
   modalButtonText: {
     color: 'white',
     fontWeight: 'bold',
+    fontSize: 15,
   },
 });
 

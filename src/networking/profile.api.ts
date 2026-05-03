@@ -11,7 +11,7 @@ interface Device {
 class ProfileApi {   
     static async getProfile(): Promise<any> {
         const accessToken = await TokenService.getAccessToken();
-        console.log("Access token in getProfile:", accessToken);
+        //console.log("Access token in getProfile:", accessToken);
         if (!accessToken) {
             throw new Error("No access token found");
         }

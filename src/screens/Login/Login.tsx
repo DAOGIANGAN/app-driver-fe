@@ -55,7 +55,7 @@ const Login: React.FC<Props> = ({ navigation }) => {
       });
 
       const data = response.data;
-      console.log("Login response:", data);
+      //console.log("Login response:", data);
       TokenService.saveTokens(data.access_token, data.refresh_token);
 
       //chuẩn
