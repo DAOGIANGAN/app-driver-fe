@@ -6,7 +6,7 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import { Picker } from '@react-native-picker/picker'; // Cần cài: npm install @react-native-picker/picker
 import { NavigationProp, useFocusEffect } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, Image, ImageBackground, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { io } from 'socket.io-client';
@@ -32,12 +32,12 @@ type Trip = {
 
 type Props = {
   navigation: NavigationProp<any>;
+  route: any; 
 };
 
-const locations = ['GĐ2', 'G2', 'GĐ3', 'GĐ4', 'E3'];
-const slots = ['1', '2', '3', '4', '5', '6', '7'];
+const locations = ['GĐ2', 'G2', 'GĐ3', 'GĐ4', 'E3','E5', 'G3'];
 
-const Home: React.FC<Props> = ({ navigation }) => {
+const Home: React.FC<Props> = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
   const [name, setName] = useState(''); // của người dùng
   const [userId, setUserId] = useState<number | null>(null);
@@ -63,6 +63,8 @@ const Home: React.FC<Props> = ({ navigation }) => {
 useEffect(() => {
   if (userId) {
     const socket = io(process.env.EXPO_PUBLIC_API_URL ?? '', { transports: ['websocket'] });
+    const abortController = new AbortController();
+    const signal = abortController.signal;
 
     // Ngay sau khi kết nối, gửi userId của bạn lên server để đăng ký
     socket.on('connect', () => {
@@ -73,7 +75,7 @@ useEffect(() => {
     socket.on('approvedToTrip', () => {
       console.log('Bạn đã được duyệt vào một chuyến đi.');
       alert('Bạn đã được duyệt vào chuyến đi đã đăng ký!');
-      fetchMyTrip(); // Cập nhật lại chuyến đi của bạn
+      fetchMyTrip(signal); // Cập nhật lại chuyến đi của bạn
     });
 
     // Khi chuyến bị hủy, gửi cho cả room
@@ -84,6 +86,7 @@ useEffect(() => {
 
     // Cleanup khi unmount
     return () => {
+      abortController.abort();
       socket.disconnect();
     };
   }
@@ -135,7 +138,7 @@ useEffect(() => {
   };
 
   // Hàm lấy chuyến đi của mình
-  const fetchMyTrip = async () => {
+  const fetchMyTrip = async (signal?: AbortSignal) => {
     try {
       const accessToken = await TokenService.getAccessToken();
       const userId = await ProfileService.getUserId(); // Lấy userId là số
@@ -144,11 +147,16 @@ useEffect(() => {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
+        signal, // Truyền abort signal vào apiClient
       });
       const data = await response.data;
       setMyTrip(data);
     } catch (error) {
       const err: any = error;
+      if (err.name === 'CanceledError') {
+        console.log('Yêu cầu fetchMyTrip đã bị hủy.');
+        return;
+      }
       if (err?.response?.status === 404) {
         setMyTrip(null); // Không có chuyến đi, không báo lỗi
       } else {
@@ -158,24 +166,56 @@ useEffect(() => {
   };
 
   //Hàm lấy tên và ảnh đại diện của người dùng
-  const fetchUserProfile = async () => {
-    console.log("Fetching user profile...");
-    const Name = await ProfileService.getName(); 
-    console.log("User name:", Name); 
-    setName(Name|| ''); // Nếu không lấy được tên, để trống
+  const fetchUserProfile = async (signal?: AbortSignal) => {
+    try {
+      const Name = await ProfileService.getName(); 
+      console.log("User name:", Name); 
+      setName(Name|| ''); // Nếu không lấy được tên, để trống
+    } catch (error) {
+      const err: any = error;
+      if (err.name === 'CanceledError') {
+        console.log('Yêu cầu fetchUserProfile đã bị hủy.');
+      } else {
+        console.error('Lỗi khi lấy thông tin người dùng:', error);
+      }
+    }
   };
 
-  // Lấy dữ liệu chuyến đi của mình khi mở trang
   useFocusEffect(
-    React.useCallback(() => {
-      fetchUserProfile();
-      fetchMyTrip();
-      fetchTrips();
-    }, [])
+    useCallback(() => {
+      const tripOut = route.params?.tripOut;
+      if (tripOut) {
+        //console.log('Đã nhận được tripOut param, cập nhật lại dữ liệu...:', tripOut);
+        setMyTrip(null); 
+        navigation.setParams({ tripOut: undefined });
+      }
+    }, [route.params?.tripOut])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      const trip = route.params?.trip;
+      if (trip) {
+        setMyTrip(trip);
+        navigation.setParams({ trip: undefined });
+      }
+    }, [route.params?.trip])
   );
   
+  useEffect(() => {
+    const abortController = new AbortController();
+    const signal = abortController.signal;
+    fetchUserProfile(signal);
+    fetchMyTrip(signal);
+    fetchTrips(signal);
+
+    return () => {
+      abortController.abort(); // Hủy các request khi component unmount
+    };
+  }, []); // Chỉ chạy một lần khi component mount
+
   // Lấy dữ liệu các chuyến đi từ backend khi mở trang
-  const fetchTrips = async () => {
+  const fetchTrips = async (signal?: AbortSignal) => {
     try {
       // Ví dụ gọi API, thay bằng API thật của bạn
         const accessToken = await TokenService.getAccessToken();
@@ -183,19 +223,24 @@ useEffect(() => {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
+        signal, // Truyền abort signal vào apiClient
       });
       const data = await response.data;
-      console.log('Danh sách chuyến đi:', data);
       setTripsData(data);
       // setFilteredTrips(data); // Hiển thị toàn bộ ban đầu
     } catch (error) {
-      console.error('Lỗi khi lấy danh sách chuyến đi:', error);
+      const err: any = error;
+      if (err.name === 'CanceledError') {
+        console.log('Yêu cầu fetchTrips đã bị hủy.');
+      } else {
+        console.error('Lỗi khi lấy danh sách chuyến đi:', error);
+      }
     }
   };
 
   //hàm tham gia chuyến đi
   const joinTrip = async (tripId: number) => {
-    if(myTrip){
+    if(myTrip != null){
       alert('Bạn chỉ được tham gia một chuyến đi tại một thời điểm!');
       return;
     }
@@ -206,13 +251,16 @@ useEffect(() => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      alert('Đã gửi yêu cầu tham gia chuyến đi!');
-      fetchMyTrip(); // Cập nhật lại chuyến đi của bạn
-      fetchTrips(); // Cập nhật lại danh sách chuyến đi
+      removeTripById(tripId); // Cập nhật lại danh sách chuyến đi
     } catch (error) {
       alert('Tham gia chuyến đi thất bại!');
       console.error('Lỗi khi tham gia chuyến đi:', error);
     }
+  };
+
+  //hàm xóa một chuyến đi khỏi danh sách
+  const removeTripById = (id: number) => {
+    setTripsData(prevTrips => prevTrips.filter(trip => trip.id !== id));
   };
 
   
@@ -223,7 +271,7 @@ useEffect(() => {
       resizeMode="cover" // 'cover' để ảnh phủ hết nền, 'stretch' để kéo dãn
     >
       <StatusBar style="dark" translucent backgroundColor="transparent" />
-      <View style={[styles.container, { paddingTop: insets.top }]}> 
+      <View style={[styles.container, { paddingTop: insets.top }]}>
         {/* Khung ảnh người dùng */}
         <View style={styles.profileContainer}>
           <Text style={styles.username}>Chào {name} !</Text>
@@ -381,7 +429,7 @@ useEffect(() => {
     >
         <TouchableOpacity
           style={styles.chatButton}
-          onPress={() => navigation.navigate('TripDetail')}
+          onPress={() => navigation.navigate('TripDetail', { trip: myTrip })}
         >
           <Image
             source={require('./../../assets/verhicle.png')}

@@ -30,9 +30,9 @@ type Props = {
 const FixedTrip : React.FC<Props> = ({ navigation }) => {
   const [comparedSchedules, setComparedSchedules] = useState<ComparedSchedule[]>([]);
   const [receivedRequests, setReceivedRequests] = useState<FixedTripRequest[]>([]);
+  const [fixedTrips, setFixedTrips] = useState<FixedTripRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [userId, setUserId] = useState<number | null>(null);
   const [isPage1, setIsPage1] = useState(true);
 
   // Search states
@@ -58,19 +58,20 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
 
       const schedulesUrl = `/schedules/compareWithLastTripDriver?userId=${currentUserId}`;
       const requestsUrl = '/fixed-trip-requests/received';
-      console.log("Requesting URLs:");
-      console.log(apiClient.getUri() + schedulesUrl);
-      console.log(apiClient.getUri() + requestsUrl);
+      const fixedTripsUrl = '/fixed-trip-requests/my-approved-requests';
 
-      const [schedulesResponse, requestsResponse] = await Promise.all([
+      const [schedulesResponse, requestsResponse, fixedTripsResponse] = await Promise.all([
         apiClient.get(schedulesUrl, { headers }),
-        apiClient.get(requestsUrl, { headers })
+        apiClient.get(requestsUrl, { headers }),
+        apiClient.get(fixedTripsUrl, { headers })
       ]);
 
       setComparedSchedules(schedulesResponse.data);
-      console.log("Compared schedules response: ", schedulesResponse.data);
+      // console.log("Compared schedules response: ", schedulesResponse.data);
       setReceivedRequests(requestsResponse.data);
-
+      setFixedTrips(fixedTripsResponse.data);
+      console.log("Received requests response: ", requestsResponse.data);
+      console.log("Fixed trips response: ", fixedTripsResponse.data);
     } catch (error) {
       console.error('Error fetching data:', error);
       Alert.alert('Error', 'Could not fetch fixed trip data. Please pull down to refresh.');
@@ -156,7 +157,7 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
 
         const requestData = {
             requesteeId: schedule.driverId,
-            requestedDays: [schedule.previousSchedule1.dayOfWeek],
+            requestedDay: schedule.previousSchedule1.dayOfWeek,
             startTime: schedule.previousSchedule1.endTime,
             endTime: schedule.nextSchedule1.startTime,
             startLocation: schedule.previousSchedule1.location,
@@ -164,7 +165,7 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
         };
 
         await apiClient.post('/fixed-trip-requests', requestData, { headers });
-        Alert.alert('Success', 'Fixed trip request sent successfully.');
+        Alert.alert('Success', 'Đã gửi yêu cầu thành công.');
         onRefresh(); // Refresh data to show updated state
     } catch (error) {
         console.error('Error creating fixed trip request:', error);
@@ -200,11 +201,29 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
       const headers = { Authorization: `Bearer ${accessToken}` };
 
       await apiClient.patch(`/fixed-trip-requests/${requestId}/reject`, {}, { headers });
-      Alert.alert('Success', 'Request rejected successfully.');
+      Alert.alert('Success', 'Từ chối yêu cầu thành công.');
       onRefresh(); // Refresh data
     } catch (error) {
       console.error('Error rejecting request:', error);
       Alert.alert('Error', 'Could not reject the request.');
+    }
+  };
+
+  const handleCancelRequest = async (requestId: number) => {
+    try {
+      const accessToken = await TokenService.getAccessToken();
+      if (!accessToken) {
+        Alert.alert("Error", "Authentication token not found. Please log in again.");
+        return;
+      }
+      const headers = { Authorization: `Bearer ${accessToken}` };
+
+      await apiClient.patch(`/fixed-trip-requests/${requestId}/cancel`, {}, { headers });
+      Alert.alert('Success', 'Đã xóa lịch cố định thành công.');
+      onRefresh(); // Refresh data
+    } catch (error) {
+      console.error('Error canceling request:', error);
+      Alert.alert('Error', 'Could not cancel the request.');
     }
   };
 
@@ -298,6 +317,7 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
             </View>
           </ScrollView>
         ) : (
+          <View style={{ flex: 1, backgroundColor: Colors.link }}>
           <ScrollView 
             style={{ flex: 1, backgroundColor: Colors.link, borderTopWidth: 1, borderTopColor: '#ccc' }}
             keyboardShouldPersistTaps="handled"
@@ -306,7 +326,7 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
               <Text style={styles.title1}>DANH SÁCH YÊU CẦU ĐĂNG KÝ</Text>
               {receivedRequests.length > 0 ? receivedRequests.map((request) => (
                 <View style={styles.tripCard} key={request.id}>
-                  <Text style={styles.tripDesc1}>Thời gian: {request.requestedDays}, {request.startTime} - {request.endTime}</Text>
+                  <Text style={styles.tripDesc1}>Thời gian: {request.requestedDay}, {request.startTime} - {request.endTime}</Text>
                   <Text style={styles.tripDesc2}>Người gửi: {request.requester.profile.name}</Text>
                   <View style={{ flexDirection: 'row', marginTop: 8 }} >
                     <Image
@@ -347,6 +367,52 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
               )) : <Text style={styles.noDataText}>Bạn chưa nhận được yêu cầu nào.</Text>}
             </View>
           </ScrollView>
+
+          <ScrollView 
+            style={{ flex: 1, backgroundColor: Colors.link, borderTopWidth: 1, borderTopColor: '#ccc' }}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.tableContainer}>
+              <Text style={styles.title1}>DANH SÁCH ĐÃ DUYỆT</Text>
+              {fixedTrips.length > 0 ? fixedTrips.map((request) => (
+                <View style={styles.tripCard} key={request.id}>
+                  <Text style={styles.tripDesc1}>Thời gian: {request.requestedDay}, {request.startTime} - {request.endTime}</Text>
+                  <Text style={styles.tripDesc2}>Người gửi: {request.requester.profile.name}</Text>
+                  <View style={{ flexDirection: 'row', marginTop: 8 }} >
+                    <Image
+                      source={(request.requester.profile.urlPublicAvatar) ? { uri: request.requester.profile.urlPublicAvatar } : require('./../../assets/user1.png')}
+                      style={styles.driverAvt}
+                    />
+                    <View style={{ flexDirection: 'column', justifyContent: 'space-between', borderRadius: 10, marginLeft: 10 }} >
+                      <View style={{ flexDirection: 'row', alignItems: 'center'}}>
+                        <View style={{height: 10, width: 10, borderRadius: 10, backgroundColor: Colors.secondary_background, marginRight: 8}}/>
+                        <Text style={styles.tripTitle}>Từ {request.startLocation}</Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center'}}>
+                        <View style={{height: 10, width: 10, borderRadius: 10, backgroundColor: Colors.blue, marginRight: 8}}/>
+                        <Text style={styles.tripTitle}>Đến {request.destination}</Text>
+                      </View>
+                    </View>
+                  </View>
+                  <View style={{ flex: 1,flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <TouchableOpacity style = {{flexDirection: 'row', alignItems: 'center'}} >
+                      <Text style={styles.driverLink}>SĐT: {request.requester.profile.phone} </Text>
+                    </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent:'flex-end' }}>
+                      <TouchableOpacity
+                        style={styles.createTripButton}
+                        onPress={() => handleCancelRequest(request.id)}
+                      >
+                        <Text style={styles.createTripButtonText}>Hủy</Text>
+                      </TouchableOpacity>
+                    </View>                   
+                  </View>
+                </View>
+              )) : <Text style={styles.noDataText}>Bạn chưa duyệt yêu cầu nào.</Text>}
+            </View>
+          </ScrollView>
+          </View>
+
           )}
         </View>
       )}

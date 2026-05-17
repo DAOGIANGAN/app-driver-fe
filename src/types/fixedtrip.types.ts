@@ -27,7 +27,7 @@ export interface User {
 export interface FixedTripRequest {
   id: number;
   requester: User;
-  requestedDays: string[];
+  requestedDay: string;
   startTime: string;
   endTime: string;
   startLocation: string;

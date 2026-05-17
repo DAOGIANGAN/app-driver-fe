@@ -17,11 +17,9 @@
       "package": "unidrivercom.giangan.unidriver"
     },
     "web": {
-      "output": "static",
       "favicon": "./src/assets/favicon.png"
     },
     "plugins": [
-      "expo-router",
       [
         "expo-splash-screen",
         {
@@ -40,13 +38,19 @@
     ],
     "experiments": {
       "typedRoutes": true,
-      "reactCompiler": true
+      "reactCompiler": false
     },
     "extra": {
       "router": {},
       "eas": {
         "projectId": "528186cc-25b4-485c-93bb-ccf99b856fa8"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/528186cc-25b4-485c-93bb-ccf99b856fa8"
     }
   }
 }

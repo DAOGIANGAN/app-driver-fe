@@ -3,11 +3,14 @@ import apiClient from '@/src/networking/apiclient';
 import ProfileService from '@/src/services/profile.service';
 import TokenService from '@/src/services/token.service';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
 import { NavigationProp } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Modal,
+  Platform,
   ScrollView,
   StatusBar,
   Text,
@@ -31,6 +34,8 @@ interface ScheduleItem {
 const initialSchedule: ScheduleItem[] = [];
 
 const daysOfWeek = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ Nhật'];
+const locations = ['GĐ2', 'G2', 'GĐ3', 'GĐ4', 'E3','E5', 'G3'];
+
 
 type Props = {
   navigation: NavigationProp<any>;
@@ -41,10 +46,28 @@ const ScheduleScreen: React.FC<Props> = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [currentDay, setCurrentDay] = useState('');
   const [newSubjectName, setNewSubjectName] = useState('');
-  const [newStartTime, setNewStartTime] = useState('');
-  const [newEndTime, setNewEndTime] = useState('');
+  const [newStartTime, setNewStartTime] = useState(new Date());
+  const [newEndTime, setNewEndTime] = useState(new Date());
   const [newLocation, setNewLocation] = useState('');
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   const [userId, setUserId] = useState<number | null>(null);
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+  };
+
+  const handleStartTimeChange = (event: any, selectedDate?: Date) => {
+    const currentDate = selectedDate || newStartTime;
+    setShowStartTimePicker(Platform.OS === 'ios');
+    setNewStartTime(currentDate);
+  };
+
+  const handleEndTimeChange = (event: any, selectedDate?: Date) => {
+    const currentDate = selectedDate || newEndTime;
+    setShowEndTimePicker(Platform.OS === 'ios');
+    setNewEndTime(currentDate);
+  };
 
   useEffect(() => {
     const loadUserId = async () => {
@@ -81,8 +104,8 @@ const ScheduleScreen: React.FC<Props> = ({ navigation }) => {
   const handleOpenAddModal = (day: string) => {
     setCurrentDay(day);
     setNewSubjectName('');
-    setNewStartTime('');
-    setNewEndTime('');
+    setNewStartTime(new Date());
+    setNewEndTime(new Date());
     setNewLocation('');
     setModalVisible(true);
   };
@@ -97,8 +120,8 @@ const ScheduleScreen: React.FC<Props> = ({ navigation }) => {
     const newSubjectData = {
       subjectName: newSubjectName,
       dayOfWeek: currentDay,
-      startTime: newStartTime,
-      endTime: newEndTime,
+      startTime: formatTime(newStartTime),
+      endTime: formatTime(newEndTime),
       location: newLocation,
     };
 
@@ -175,24 +198,55 @@ const ScheduleScreen: React.FC<Props> = ({ navigation }) => {
               value={newSubjectName}
               onChangeText={setNewSubjectName}
             />
-            <TextInput
-              placeholder="Thời gian bắt đầu (HH:mm)"
-              style={styles.input}
-              value={newStartTime}
-              onChangeText={setNewStartTime}
-            />
-            <TextInput
-              placeholder="Thời gian kết thúc (HH:mm)"
-              style={styles.input}
-              value={newEndTime}
-              onChangeText={setNewEndTime}
-            />
-            <TextInput
-              placeholder="Giảng đường"
-              style={styles.input}
-              value={newLocation}
-              onChangeText={setNewLocation}
-            />
+            
+            {/* Start Time Picker */}
+            <View style={styles.pickerWrapper}>
+              <Text style={styles.label}>Thời gian bắt đầu</Text>
+              <TouchableOpacity onPress={() => setShowStartTimePicker(true)} style={styles.timePickerButton}>
+                <Text style={styles.timePickerButtonText}>
+                  {formatTime(newStartTime)}
+                </Text>
+              </TouchableOpacity>
+              {showStartTimePicker && (
+                <DateTimePicker
+                  testID="startTimePicker"
+                  value={newStartTime}
+                  mode="time"
+                  is24Hour={true}
+                  display="default"
+                  onChange={handleStartTimeChange}
+                />
+              )}
+            </View>
+
+            {/* End Time Picker */}
+            <View style={styles.pickerWrapper}>
+              <Text style={styles.label}>Thời gian kết thúc</Text>
+              <TouchableOpacity onPress={() => setShowEndTimePicker(true)} style={styles.timePickerButton}>
+                <Text style={styles.timePickerButtonText}>
+                  {formatTime(newEndTime)}
+                </Text>
+              </TouchableOpacity>
+              {showEndTimePicker && (
+                <DateTimePicker
+                  testID="endTimePicker"
+                  value={newEndTime}
+                  mode="time"
+                  is24Hour={true}
+                  display="default"
+                  onChange={handleEndTimeChange}
+                />
+              )}
+            </View>
+
+            <View style={styles.pickerWrapper}>
+              <Text style={styles.label}>Giảng đường</Text>
+              <Picker selectedValue={newLocation} onValueChange={setNewLocation} style={styles.picker}>
+                <Picker.Item label="Chọn giảng đường" value="" />
+                {locations.map(loc => <Picker.Item key={loc} label={loc} value={loc} />)}
+              </Picker>
+            </View>
+
             <View style={styles.modalButtonContainer}>
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}

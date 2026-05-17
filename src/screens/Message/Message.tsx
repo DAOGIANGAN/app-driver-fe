@@ -1,4 +1,5 @@
 import Colors from '@/src/constants/Color';
+import { useKeyboard } from '@/src/hooks/useKeyboard';
 import apiClient from '@/src/networking/apiclient';
 import ProfileService from '@/src/services/profile.service';
 import TokenService from '@/src/services/token.service';
@@ -6,7 +7,8 @@ import { Profile, Trip } from '@/src/types/fixedtrip.types';
 import { Ionicons } from "@expo/vector-icons";
 import { NavigationProp } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { FlatList, Image, KeyboardAvoidingView, Platform, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import io from 'socket.io-client';
 
 interface Message {
@@ -21,6 +23,9 @@ type Props = {
 };
 
 const MessageScreen: React.FC<Props> = ({ navigation }) => {
+  const keyboardHeight = useKeyboard(); // Lấy chiều cao bàn phím
+  const { bottom } = useSafeAreaInsets(); // Lấy khoảng đệm an toàn ở dưới
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [myTrip, setMyTrip] = useState<Trip | null>(null);
@@ -234,50 +239,52 @@ const MessageScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
         </View>
-        <FlatList
-          style={{ flex: 1, backgroundColor: '#fcfcfc' }}
-          data={messages}
-          keyExtractor={item => item._id.toString()}
-          renderItem={({ item }) => {
-            const isMyMessage = item.senderId === String(myId);
-            return (
-                <View style={isMyMessage ? styles.myMessageContainer : styles.otherMessageContainer}>
-                    {!isMyMessage && (
-                        <Image
-                            source={(participants[item.senderId]?.urlPublicAvatar) ? { uri: participants[item.senderId].urlPublicAvatar } : require('./../../assets/user1.png')}
-                            style={styles.senderAvatar}
-                        />
-                    )}
-                    <View style={{ flex: 1 }}>
-                        {!isMyMessage && (
-                            <Text style={styles.senderName}>
-                                {participants[item.senderId]?.name || 'Unknown User'}
-                            </Text>
-                        )}
-                        <View style={isMyMessage ? styles.myMessage : styles.otherMessage}>
-                            <Text style={isMyMessage ? styles.myMessageText : styles.otherMessageText}>
-                                {item.content}
-                            </Text>
-                        </View>
-                    </View>
-                </View>
-            );
-        }}
-          contentContainerStyle={styles.messageList}
-          inverted
-        />
-        <KeyboardAvoidingView style={{backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: "#f0f0f0", paddingBottom: 10, paddingHorizontal: 10, justifyContent: 'center', alignItems: 'center'}} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={styles.inputRow}>
-            <TextInput
-              style={styles.input}
-              value={input}
-              onChangeText={setInput}
-              placeholder="Nhập tin nhắn..."
-              returnKeyType="send"
-              onSubmitEditing={sendMessage}
-            />
+        <View style={{ flex: 1 }}>
+          <FlatList
+            style={{ flex: 1, backgroundColor: '#fcfcfc' }}
+            data={messages}
+            keyExtractor={item => item._id.toString()}
+            renderItem={({ item }) => {
+              const isMyMessage = item.senderId === String(myId);
+              return (
+                  <View style={isMyMessage ? styles.myMessageContainer : styles.otherMessageContainer}>
+                      {!isMyMessage && (
+                          <Image
+                              source={(participants[item.senderId]?.urlPublicAvatar) ? { uri: participants[item.senderId].urlPublicAvatar } : require('./../../assets/user1.png')}
+                              style={styles.senderAvatar}
+                          />
+                      )}
+                      <View style={{ flex: 1 }}>
+                          {!isMyMessage && (
+                              <Text style={styles.senderName}>
+                                  {participants[item.senderId]?.name || 'Unknown User'}
+                              </Text>
+                          )}
+                          <View style={isMyMessage ? styles.myMessage : styles.otherMessage}>
+                              <Text style={isMyMessage ? styles.myMessageText : styles.otherMessageText}>
+                                  {item.content}
+                              </Text>
+                          </View>
+                      </View>
+                  </View>
+              );
+          }}
+            contentContainerStyle={styles.messageList}
+            inverted
+          />
+          <View style={{backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: "#f0f0f0", paddingBottom: 10, paddingHorizontal: 10, justifyContent: 'center', alignItems: 'center'}}>
+            <View style={styles.inputRow}>
+              <TextInput
+                style={styles.input}
+                value={input}
+                onChangeText={setInput}
+                placeholder="Nhập tin nhắn..."
+                returnKeyType="send"
+                onSubmitEditing={sendMessage}
+              />
+            </View>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </View>
     </View>
   );

@@ -56,7 +56,7 @@ const ProfileScreen: React.FC<Props> = ({ route, navigation }) => {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 1,
+      quality: 0.5,
       base64: true, // Yêu cầu base64 để gửi lên Cloudinary
     });
 
@@ -70,7 +70,12 @@ const ProfileScreen: React.FC<Props> = ({ route, navigation }) => {
         formData.append('file', base64Img);
         formData.append('upload_preset', 'avatar_appdriver'); 
 
-        const response = await fetch('https://api.cloudinary.com/v1_1/dkddetsl3/image/upload', { 
+        const cloudinaryUploadUrl = process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_URL;
+        if (!cloudinaryUploadUrl) {
+          throw new Error('Missing Cloudinary upload URL');
+        }
+
+        const response = await fetch(cloudinaryUploadUrl, { 
           method: 'POST',
           body: formData,
         });
@@ -115,18 +120,6 @@ const ProfileScreen: React.FC<Props> = ({ route, navigation }) => {
       );
       return;
     }
-    //  else {
-    //   try {
-    //     await apiClient.delete("/auth/logout", {
-    //       headers: {
-    //         Authorization: `Bearer ${refreshToken}`
-    //       }
-    //     })
-    //   } catch (error) {
-    //     console.error("Lỗi khi kiểm tra trạng thái đăng nhập:", error);
-    //   }
-    // } 
-    {/* Xóa thông tin người dùng khỏi local storage*/}
     try {
       await ProfileService.removeProfile();
       console.log("Thông tin người dùng đã được xóa khỏi thiết bị.");

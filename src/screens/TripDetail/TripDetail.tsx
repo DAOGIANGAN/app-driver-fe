@@ -16,13 +16,14 @@ type TripDetailRouteParams = {
 };
 
 type Props = {
-    navigation: NavigationProp<any>; 
+    navigation: NavigationProp<any>;
+    route: any; 
 };
 
-const locations = ['GĐ2', 'G2', 'GĐ3', 'GĐ4', 'E3'];
+const locations = ['GĐ2', 'G2', 'GĐ3', 'GĐ4', 'E3','E5', 'G3'];
 const slots = ['1', '2', '3', '4', '5', '6', '7'];
 
-const TripDetail: React.FC<Props> = ({ navigation }) => {
+const TripDetail: React.FC<Props> = ({ navigation, route }) => {
   // Nhận dữ liệu chuyến đi từ params
   const [trip, setMyTrip] = useState<Trip | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
@@ -106,9 +107,11 @@ const TripDetail: React.FC<Props> = ({ navigation }) => {
 
   useFocusEffect(
     React.useCallback(() => {
-    fetchMyTrip();
-    ProfileService.getUserId().then(setUserId);
-  }, [])
+      if (route.params?.trip) {
+        setMyTrip(route.params.trip);
+      }
+      ProfileService.getUserId().then(setUserId);
+    }, [route.params?.trip])
   );
 
   //lắng nghe realtime qua socket.io
@@ -140,7 +143,7 @@ const TripDetail: React.FC<Props> = ({ navigation }) => {
     // Khi chuyến bị hủy, gửi cho cả room
     socket.on('tripCanceled', (data: { message: string; tripId: string; userId: string }) => {
       alert(data.message);
-      if(userId.toString() != data.userId) navigation.goBack();
+      if(userId.toString() != data.userId) navigation.navigate('Home', { tripOut: true });
       // TODO: Điều hướng về trang khác nếu cần
     });
 
@@ -158,7 +161,7 @@ const TripDetail: React.FC<Props> = ({ navigation }) => {
     }
   }, [trip, userId]);
 
-  if (!trip) {
+  if (trip == null) {
     return (
       <View style={styles.container}>
         <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
@@ -249,7 +252,8 @@ const TripDetail: React.FC<Props> = ({ navigation }) => {
         }
       );
       // Sau khi duyệt thành công, nên gọi lại API lấy trip mới hoặc cập nhật state
-      refreshTrip();
+      // setMyTrip(response.data.trip); // Cập nhật trip mới từ response
+      fetchMyTrip(); // Gọi lại hàm để lấy dữ liệu trip đầy đủ
     } catch (error: any) {
       console.error('Lỗi duyệt khách hàng:', error?.response?.data || error);
       alert(error?.response?.data?.message || 'Duyệt khách hàng thất bại!');
@@ -274,7 +278,7 @@ const TripDetail: React.FC<Props> = ({ navigation }) => {
         }
       );
       alert(response.data.message || 'Bạn đã rời chuyến');
-      navigation.goBack();
+      navigation.navigate('Home', { tripOut: true });
       // Nên gọi lại API lấy trip mới hoặc điều hướng về màn hình khác
     } catch (error: any) {
       alert(error?.response?.data?.message || 'Rời chuyến thất bại!');
@@ -293,9 +297,8 @@ const TripDetail: React.FC<Props> = ({ navigation }) => {
           },
         }
       );
-      alert(response.data.message || 'Bạn đã hủy chuyến');
-      navigation.goBack();
-      // Nên gọi lại API lấy trip mới hoặc điều hướng về màn hình khác
+      // navigation.goBack();
+      navigation.navigate('Home', { tripOut: true });
     } catch (error: any) {
       alert(error?.response?.data?.message || 'Hủy chuyến thất bại!');
       console.error('Lỗi hủy chuyến:', error);
@@ -316,8 +319,7 @@ const TripDetail: React.FC<Props> = ({ navigation }) => {
         }
       );
       alert(response.data.message || 'Chuyến đi đã được hoàn thành!');
-      refreshTrip(); // Refresh to show updated status
-      navigation.goBack();
+      navigation.navigate('Home', { tripOut: true });
     } catch (error: any) {
       alert(error?.response?.data?.message || 'Hoàn thành chuyến đi thất bại!');
       console.error('Lỗi hoàn thành chuyến đi:', error);
@@ -328,7 +330,7 @@ const TripDetail: React.FC<Props> = ({ navigation }) => {
     <ScrollView contentContainerStyle={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton} activeOpacity={0.6}>
+        <TouchableOpacity onPress={() => navigation.navigate('Home', { trip: trip })} style={styles.backButton} activeOpacity={0.6}>
           <Ionicons name="arrow-back" size={26} color="gray" />
         </TouchableOpacity>
         <Text style={styles.title}>Chuyến đi</Text>

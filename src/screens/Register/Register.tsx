@@ -18,11 +18,12 @@ const Register: React.FC<Props> = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
+  const [phone, setPhone] = useState("");
   const [dob, setDob] = useState("");
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
   const isFormValid = () => {
-    return email.trim() !== '' && password.trim() !== '' && confirmPassword.trim() !== '' && name.trim() !== '' && username.trim() !== '' && dob.trim() !== '';
+    return email.trim() !== '' && password.trim() !== '' && confirmPassword.trim() !== '' && name.trim() !== '' && username.trim() !== '' && phone.trim() !== '' && dob.trim() !== '';
   };
 
   const handleRegister = async () => {
@@ -81,6 +82,9 @@ const Register: React.FC<Props> = ({ navigation }) => {
 
               {/* <Text style={styles.textInput}>Tên người dùng</Text> */}
               <TextInput style={styles.input} value={username} onChangeText={setUsername} placeholder="Tên người dùng"/>
+
+              {/* <Text style={styles.textInput}>Số điện thoại</Text> */}
+              <TextInput style={styles.input} value={phone} onChangeText={setPhone} placeholder="Số điện thoại"/>
 
               {/* <Text style={styles.textInput}>Ngày sinh</Text> */}
               <TouchableOpacity onPress={() => setDatePickerVisibility(true)} style={styles.input}>

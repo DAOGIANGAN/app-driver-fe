@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   },
   input: {
     width: '100%',
-    height: 45,
+    height: 50,
     borderColor: '#ddd',
     borderWidth: 1,
     borderRadius: 8,
@@ -170,6 +170,30 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 15,
+  },
+  label: {
+    fontSize: 14,
+    marginBottom: 6,
+    marginLeft: 4,
+    color: Colors.primary_background,
+  },
+  timePickerButtonText: {
+    fontSize: 16,
+  },
+  timePickerButton: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    padding: 15,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  pickerWrapper: {
+    marginBottom: 12,
+    width: '100%',
+  },
+  picker: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
   },
 });
 

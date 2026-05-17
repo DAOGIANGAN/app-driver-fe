@@ -19,7 +19,7 @@ const Loading: React.FC = () => {
 
         // Reset điều hướng
         if (navigationRef.isReady()) {
-          console.log('Response:', response);
+          //console.log('Response:', response);
           navigationRef.reset({
             index: 0,
             routes: [{ name: 'Home' }],
