@@ -70,8 +70,7 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
       // console.log("Compared schedules response: ", schedulesResponse.data);
       setReceivedRequests(requestsResponse.data);
       setFixedTrips(fixedTripsResponse.data);
-      console.log("Received requests response: ", requestsResponse.data);
-      console.log("Fixed trips response: ", fixedTripsResponse.data);
+
     } catch (error) {
       console.error('Error fetching data:', error);
       Alert.alert('Error', 'Could not fetch fixed trip data. Please pull down to refresh.');
@@ -164,12 +163,14 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
             destination: schedule.nextSchedule1.location,
         };
 
+        console.log('Sending fixed trip request with data:', requestData);
+
         await apiClient.post('/fixed-trip-requests', requestData, { headers });
         Alert.alert('Success', 'Đã gửi yêu cầu thành công.');
         onRefresh(); // Refresh data to show updated state
-    } catch (error) {
-        console.error('Error creating fixed trip request:', error);
-        Alert.alert('Error', 'Could not send the fixed trip request.');
+    } catch (error: any) {
+        console.error('Error creating fixed trip request:', error.response ? JSON.stringify(error.response.data) : error.message);
+        alert(error.response?.data?.message || 'Không thể đăng ký chuyến đi cố định này.');
     }
   };
 
@@ -234,8 +235,6 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
       </View>
     );
   }
-
-
 
   return (
     <View style={styles.container}>
@@ -318,101 +317,104 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
           </ScrollView>
         ) : (
           <View style={{ flex: 1, backgroundColor: Colors.link }}>
-          <ScrollView 
-            style={{ flex: 1, backgroundColor: Colors.link, borderTopWidth: 1, borderTopColor: '#ccc' }}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.tableContainer}>
-              <Text style={styles.title1}>DANH SÁCH YÊU CẦU ĐĂNG KÝ</Text>
-              {receivedRequests.length > 0 ? receivedRequests.map((request) => (
-                <View style={styles.tripCard} key={request.id}>
-                  <Text style={styles.tripDesc1}>Thời gian: {request.requestedDay}, {request.startTime} - {request.endTime}</Text>
-                  <Text style={styles.tripDesc2}>Người gửi: {request.requester.profile.name}</Text>
-                  <View style={{ flexDirection: 'row', marginTop: 8 }} >
-                    <Image
-                      source={(request.requester.profile.urlPublicAvatar) ? { uri: request.requester.profile.urlPublicAvatar } : require('./../../assets/user1.png')}
-                      style={styles.driverAvt}
-                    />
-                    <View style={{ flexDirection: 'column', justifyContent: 'space-between', borderRadius: 10, marginLeft: 10 }} >
-                      <View style={{ flexDirection: 'row', alignItems: 'center'}}>
-                        <View style={{height: 10, width: 10, borderRadius: 10, backgroundColor: Colors.secondary_background, marginRight: 8}}/>
-                        <Text style={styles.tripTitle}>Từ {request.startLocation}</Text>
-                      </View>
-                      <View style={{ flexDirection: 'row', alignItems: 'center'}}>
-                        <View style={{height: 10, width: 10, borderRadius: 10, backgroundColor: Colors.blue, marginRight: 8}}/>
-                        <Text style={styles.tripTitle}>Đến {request.destination}</Text>
-                      </View>
-                    </View>
-                  </View>
-                  <View style={{ flex: 1,flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <TouchableOpacity style = {{flexDirection: 'row', alignItems: 'center'}} >
-                      <Text style={styles.driverLink}>SĐT: {request.requester.profile.phone} </Text>
-                    </TouchableOpacity>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent:'flex-end' }}>
-                      <TouchableOpacity
-                        style={[styles.createTripButton, {backgroundColor: '#dbdbdb'}]}
-                        onPress={() => handleRejectRequest(request.id)}
-                      >
-                        <Text style={styles.createTripButtonText}>Từ chối</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.createTripButton}
-                        onPress={() => handleApproveRequest(request.id)}
-                      >
-                        <Text style={styles.createTripButtonText}>Chấp nhận</Text>
-                      </TouchableOpacity>
-                    </View>                   
-                  </View>
-                </View>
-              )) : <Text style={styles.noDataText}>Bạn chưa nhận được yêu cầu nào.</Text>}
-            </View>
-          </ScrollView>
-
-          <ScrollView 
-            style={{ flex: 1, backgroundColor: Colors.link, borderTopWidth: 1, borderTopColor: '#ccc' }}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.tableContainer}>
-              <Text style={styles.title1}>DANH SÁCH ĐÃ DUYỆT</Text>
-              {fixedTrips.length > 0 ? fixedTrips.map((request) => (
-                <View style={styles.tripCard} key={request.id}>
-                  <Text style={styles.tripDesc1}>Thời gian: {request.requestedDay}, {request.startTime} - {request.endTime}</Text>
-                  <Text style={styles.tripDesc2}>Người gửi: {request.requester.profile.name}</Text>
-                  <View style={{ flexDirection: 'row', marginTop: 8 }} >
-                    <Image
-                      source={(request.requester.profile.urlPublicAvatar) ? { uri: request.requester.profile.urlPublicAvatar } : require('./../../assets/user1.png')}
-                      style={styles.driverAvt}
-                    />
-                    <View style={{ flexDirection: 'column', justifyContent: 'space-between', borderRadius: 10, marginLeft: 10 }} >
-                      <View style={{ flexDirection: 'row', alignItems: 'center'}}>
-                        <View style={{height: 10, width: 10, borderRadius: 10, backgroundColor: Colors.secondary_background, marginRight: 8}}/>
-                        <Text style={styles.tripTitle}>Từ {request.startLocation}</Text>
-                      </View>
-                      <View style={{ flexDirection: 'row', alignItems: 'center'}}>
-                        <View style={{height: 10, width: 10, borderRadius: 10, backgroundColor: Colors.blue, marginRight: 8}}/>
-                        <Text style={styles.tripTitle}>Đến {request.destination}</Text>
+            <View style={{ flex: 1, backgroundColor: Colors.link, borderTopWidth: 1, borderTopColor: '#ccc' }}>
+            <Text style={styles.title1}>DANH SÁCH YÊU CẦU ĐĂNG KÝ</Text>
+            <ScrollView 
+              style={{ flex: 1, backgroundColor: Colors.link }}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View style={styles.tableContainer}>
+                {receivedRequests.length > 0 ? receivedRequests.map((request) => (
+                  <View style={styles.tripCard} key={request.id}>
+                    <Text style={styles.tripDesc1}>Thời gian: {request.requestedDay}, {request.startTime} - {request.endTime}</Text>
+                    <Text style={styles.tripDesc2}>Người gửi: {request.requester.profile.name}</Text>
+                    <View style={{ flexDirection: 'row', marginTop: 8 }} >
+                      <Image
+                        source={(request.requester.profile.urlPublicAvatar) ? { uri: request.requester.profile.urlPublicAvatar } : require('./../../assets/user1.png')}
+                        style={styles.driverAvt}
+                      />
+                      <View style={{ flexDirection: 'column', justifyContent: 'space-between', borderRadius: 10, marginLeft: 10 }} >
+                        <View style={{ flexDirection: 'row', alignItems: 'center'}}>
+                          <View style={{height: 10, width: 10, borderRadius: 10, backgroundColor: Colors.secondary_background, marginRight: 8}}/>
+                          <Text style={styles.tripTitle}>Từ {request.startLocation}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center'}}>
+                          <View style={{height: 10, width: 10, borderRadius: 10, backgroundColor: Colors.blue, marginRight: 8}}/>
+                          <Text style={styles.tripTitle}>Đến {request.destination}</Text>
+                        </View>
                       </View>
                     </View>
-                  </View>
-                  <View style={{ flex: 1,flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <TouchableOpacity style = {{flexDirection: 'row', alignItems: 'center'}} >
-                      <Text style={styles.driverLink}>SĐT: {request.requester.profile.phone} </Text>
-                    </TouchableOpacity>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent:'flex-end' }}>
-                      <TouchableOpacity
-                        style={styles.createTripButton}
-                        onPress={() => handleCancelRequest(request.id)}
-                      >
-                        <Text style={styles.createTripButtonText}>Hủy</Text>
+                    <View style={{ flex: 1,flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <TouchableOpacity style = {{flexDirection: 'row', alignItems: 'center'}} >
+                        <Text style={styles.driverLink}>SĐT: {request.requester.profile.phone} </Text>
                       </TouchableOpacity>
-                    </View>                   
+                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent:'flex-end' }}>
+                        <TouchableOpacity
+                          style={[styles.createTripButton, {backgroundColor: '#dbdbdb'}]}
+                          onPress={() => handleRejectRequest(request.id)}
+                        >
+                          <Text style={styles.createTripButtonText}>Từ chối</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.createTripButton}
+                          onPress={() => handleApproveRequest(request.id)}
+                        >
+                          <Text style={styles.createTripButtonText}>Chấp nhận</Text>
+                        </TouchableOpacity>
+                      </View>                   
+                    </View>
                   </View>
-                </View>
-              )) : <Text style={styles.noDataText}>Bạn chưa duyệt yêu cầu nào.</Text>}
+                )) : <Text style={styles.noDataText}>Bạn chưa nhận được yêu cầu nào.</Text>}
+              </View>
+            </ScrollView>
             </View>
-          </ScrollView>
+          
+            <View style={{ flex: 1, backgroundColor: Colors.link, borderTopWidth: 1, borderTopColor: '#ccc' }}>
+            <Text style={styles.title1}>DANH SÁCH ĐÃ DUYỆT</Text>
+            <ScrollView 
+              style={{ flex: 1, backgroundColor: Colors.link }}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View style={styles.tableContainer}>
+                {fixedTrips.length > 0 ? fixedTrips.map((request) => (
+                  <View style={styles.tripCard} key={request.id}>
+                    <Text style={styles.tripDesc1}>Thời gian: {request.requestedDay}, {request.startTime} - {request.endTime}</Text>
+                    <Text style={styles.tripDesc2}>Người gửi: {request.requester.profile.name}</Text>
+                    <View style={{ flexDirection: 'row', marginTop: 8 }} >
+                      <Image
+                        source={(request.requester.profile.urlPublicAvatar) ? { uri: request.requester.profile.urlPublicAvatar } : require('./../../assets/user1.png')}
+                        style={styles.driverAvt}
+                      />
+                      <View style={{ flexDirection: 'column', justifyContent: 'space-between', borderRadius: 10, marginLeft: 10 }} >
+                        <View style={{ flexDirection: 'row', alignItems: 'center'}}>
+                          <View style={{height: 10, width: 10, borderRadius: 10, backgroundColor: Colors.secondary_background, marginRight: 8}}/>
+                          <Text style={styles.tripTitle}>Từ {request.startLocation}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center'}}>
+                          <View style={{height: 10, width: 10, borderRadius: 10, backgroundColor: Colors.blue, marginRight: 8}}/>
+                          <Text style={styles.tripTitle}>Đến {request.destination}</Text>
+                        </View>
+                      </View>
+                    </View>
+                    <View style={{ flex: 1,flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <TouchableOpacity style = {{flexDirection: 'row', alignItems: 'center'}} >
+                        <Text style={styles.driverLink}>SĐT: {request.requester.profile.phone} </Text>
+                      </TouchableOpacity>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent:'flex-end' }}>
+                        <TouchableOpacity
+                          style={styles.createTripButton}
+                          onPress={() => handleCancelRequest(request.id)}
+                        >
+                          <Text style={styles.createTripButtonText}>Hủy</Text>
+                        </TouchableOpacity>
+                      </View>                   
+                    </View>
+                  </View>
+                )) : <Text style={styles.noDataText}>Bạn chưa duyệt yêu cầu nào.</Text>}
+              </View>
+            </ScrollView>
+            </View>
           </View>
-
           )}
         </View>
       )}

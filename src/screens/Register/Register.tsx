@@ -32,7 +32,7 @@ const Register: React.FC<Props> = ({ navigation }) => {
       return;
     }
     try {
-      const response = await apiClient.post("auth/register", { email, password, confirmPassword, name, username, dob });
+      const response = await apiClient.post("auth/register", { email, password, confirmPassword, name, username, dob, phone });
       const getOtp = await apiClient.get("/auth/get-otp-mail-for-register", { params: { email } });
       navigate("Activate", { email: email });
     } catch (error: any) {

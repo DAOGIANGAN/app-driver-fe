@@ -68,7 +68,7 @@ const ProfileScreen: React.FC<Props> = ({ route, navigation }) => {
         
         const formData = new FormData();
         formData.append('file', base64Img);
-        formData.append('upload_preset', 'avatar_appdriver'); 
+        formData.append('upload_preset', process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET || ''); 
 
         const cloudinaryUploadUrl = process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_URL;
         if (!cloudinaryUploadUrl) {

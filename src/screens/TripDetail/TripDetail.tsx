@@ -107,11 +107,9 @@ const TripDetail: React.FC<Props> = ({ navigation, route }) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      if (route.params?.trip) {
-        setMyTrip(route.params.trip);
-      }
-      ProfileService.getUserId().then(setUserId);
-    }, [route.params?.trip])
+      setUserId(route.params?.userId);
+      fetchMyTrip();
+    }, [route.params?.userId])
   );
 
   //lắng nghe realtime qua socket.io
@@ -142,14 +140,23 @@ const TripDetail: React.FC<Props> = ({ navigation, route }) => {
 
     // Khi chuyến bị hủy, gửi cho cả room
     socket.on('tripCanceled', (data: { message: string; tripId: string; userId: string }) => {
-      alert(data.message);
+      console.log(userId, data.userId);
+      if(userId.toString() !=  data.userId) alert(data.message);
+      if(userId.toString() != data.userId) navigation.navigate('Home', { tripOut: true });
+      // TODO: Điều hướng về trang khác nếu cần
+    });
+
+    // Khi chuyến bị hủy, gửi cho cả room
+    socket.on('tripCompleted', (data: { message: string; tripId: string; userId: string }) => {
+      console.log(userId, data.userId);
+      if(userId.toString() !=  data.userId) alert(data.message);
       if(userId.toString() != data.userId) navigation.navigate('Home', { tripOut: true });
       // TODO: Điều hướng về trang khác nếu cần
     });
 
     // Khi chuyến bị hủy, gửi cho cả room
     socket.on('tripOut', (data: { message: string; tripId: string; userId: string }) => {
-      alert(data.message);
+      if(userId.toString() != data.userId) alert(data.message);
       refreshTrip();
       // TODO: Điều hướng về trang khác nếu cần
     });    
@@ -364,8 +371,8 @@ const TripDetail: React.FC<Props> = ({ navigation, route }) => {
               </TouchableOpacity>
             </View>
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Khách hàng đã duyệt</Text>
-        {trip?.approvedCustomers.length === 0 && <Text style={styles.empty}>Chưa có khách nào được duyệt</Text>}
+        <Text style={styles.sectionTitle}>Hành khách đã duyệt</Text>
+        {trip?.approvedCustomers.length === 0 && <Text style={styles.empty}>Chưa có hành khách nào được duyệt</Text>}
         {trip?.approvedCustomers.map((u) => (
           <View key={u.id} style={styles.userRow}>
             <View style={{ flexDirection: 'row' }} >
@@ -389,8 +396,8 @@ const TripDetail: React.FC<Props> = ({ navigation, route }) => {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Khách hàng chờ duyệt</Text>
-        {trip?.customers.length === 0 && <Text style={styles.empty}>Không có khách chờ duyệt</Text>}
+        <Text style={styles.sectionTitle}>Hành khách chờ duyệt</Text>
+        {trip?.customers.length === 0 && <Text style={styles.empty}>Không có hành khách chờ duyệt</Text>}
         {trip?.customers.map((u) => (
           <View key={u.id} style={styles.userRow}>
             <View style={{ flexDirection: 'row' }} >

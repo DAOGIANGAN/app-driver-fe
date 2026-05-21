@@ -21,11 +21,12 @@ const styles = StyleSheet.create({
     color: Colors.primary_background,
   },
   title1: {
-    flex: 1,
     textAlign: 'left',
     fontSize: 13,
     marginLeft: 16,
-    marginBottom: 10,
+    marginBottom: 5,
+    marginTop: 5,
+    alignItems: 'center',
     fontWeight: 'bold',
     color: Colors.primary_background,
   },
@@ -36,7 +37,7 @@ const styles = StyleSheet.create({
   },
   tableContainer: {
     marginBottom: 20,
-    paddingTop: 20,
+    // paddingTop: 20,
   },
   tripCard: {
     backgroundColor: '#ffffff',

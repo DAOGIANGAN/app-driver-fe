@@ -68,7 +68,8 @@ useEffect(() => {
 
     // Ngay sau khi kết nối, gửi userId của bạn lên server để đăng ký
     socket.on('connect', () => {
-      socket.emit('registerUser', { userId: String(userId) });
+      socket.emit('registerUser', { userId: String(userId)});
+      if(myTrip) socket.emit('joinTripRoom', { tripId: String(myTrip.id), userId: String(userId) });
     });
 
     // Lắng nghe sự kiện 'approvedToTrip'
@@ -80,7 +81,18 @@ useEffect(() => {
 
     // Khi chuyến bị hủy, gửi cho cả room
     socket.on('tripCanceled', (data: { message: string; tripId: string; userId: string }) => {
-      alert(data.message);
+      setMyTrip(null); // Cập nhật lại chuyến đi của bạn
+      console.log(userId, data.userId);
+      if(userId.toString() != data.userId) alert(data.message);
+      // TODO: Điều hướng về trang khác nếu cần
+    });
+
+    // Khi chuyến bị hủy, gửi cho cả room
+    socket.on('tripCompleted', (data: { message: string; tripId: string; userId: string }) => {
+      setMyTrip(null); // Cập nhật lại chuyến đi của bạn
+      console.log(userId, data.userId);
+      if(userId.toString() != data.userId) alert(data.message);
+      
       // TODO: Điều hướng về trang khác nếu cần
     });
 
@@ -90,7 +102,7 @@ useEffect(() => {
       socket.disconnect();
     };
   }
-}, [userId]); // Chỉ cần phụ thuộc vào userId
+}, [userId, myTrip]); // Chỉ cần phụ thuộc vào userId
 
   function formatDateTime(date: Date | string | null) {
     if (!date) return '';
@@ -246,15 +258,14 @@ useEffect(() => {
     }
     try {
       const accessToken = await TokenService.getAccessToken();
-      await apiClient.post(`/trip/${tripId}/join`, {}, {
+      const response = await apiClient.post(`/trip/${tripId}/join`, {}, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
       removeTripById(tripId); // Cập nhật lại danh sách chuyến đi
-    } catch (error) {
-      alert('Tham gia chuyến đi thất bại!');
-      console.error('Lỗi khi tham gia chuyến đi:', error);
+    } catch (error : any) {
+      alert(error.response?.data?.message || 'Tham gia chuyến đi thất bại!');
     }
   };
 
@@ -429,7 +440,7 @@ useEffect(() => {
     >
         <TouchableOpacity
           style={styles.chatButton}
-          onPress={() => navigation.navigate('TripDetail', { trip: myTrip })}
+          onPress={() => navigation.navigate('TripDetail', { userId: userId })}
         >
           <Image
             source={require('./../../assets/verhicle.png')}
