@@ -277,9 +277,9 @@ useEffect(() => {
   
   return (
     <ImageBackground 
-      source={require('./../../assets/HomeBackground.png')} // <-- Thay 'background.png' bằng tên file ảnh của bạn
+      source={require('./../../assets/HomeBackground.png')} // 'background.png' 
       style={{flex: 1}}
-      resizeMode="cover" // 'cover' để ảnh phủ hết nền, 'stretch' để kéo dãn
+      resizeMode="cover"
     >
       <StatusBar style="dark" translucent backgroundColor="transparent" />
       <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -295,7 +295,7 @@ useEffect(() => {
           <View style={styles.pickerWrapper}>
             
             <View style={{ flexDirection: 'row' }}>
-              {/* Ảnh minh họa, thay đổi source theo ý muốn */}
+              {/* Ảnh minh họa*/}
               <Image
                 source={require('./../../assets/location_yellow.png')}
                 style={styles.filterIcons}

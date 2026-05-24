@@ -262,7 +262,6 @@ const TripDetail: React.FC<Props> = ({ navigation, route }) => {
       // setMyTrip(response.data.trip); // Cập nhật trip mới từ response
       fetchMyTrip(); // Gọi lại hàm để lấy dữ liệu trip đầy đủ
     } catch (error: any) {
-      console.error('Lỗi duyệt khách hàng:', error?.response?.data || error);
       alert(error?.response?.data?.message || 'Duyệt khách hàng thất bại!');
     }
   };

@@ -46,6 +46,14 @@ const ConfirmOtp: React.FC<Props> = ({navigation}) => {
     const handledSubmit = async () => {
         try {
             const otpCode = otp.join("");
+            if (otpCode.length < 6) {
+                alert("Mã OTP không hợp lệ");
+                return;
+            }
+            if (!otpCode) {
+                alert("Vui lòng nhập mã OTP");
+                return;
+            }
             const response = await apiClient.post("/auth/verify-otp-mail-for-forgot-password", { email: email, OTPCode: otpCode });
             if (response.status === 201) {
                 const accessToken = response.data.response.accessToken;

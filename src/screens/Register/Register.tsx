@@ -26,24 +26,34 @@ const Register: React.FC<Props> = ({ navigation }) => {
     return email.trim() !== '' && password.trim() !== '' && confirmPassword.trim() !== '' && name.trim() !== '' && username.trim() !== '' && phone.trim() !== '' && dob.trim() !== '';
   };
 
+  const isPasswordMatch = () => {
+    return password.trim() === confirmPassword.trim();
+  }
+
   const handleRegister = async () => {
     if (!isFormValid()) {
       alert("Vui lòng điền đầy đủ thông tin.");
       return;
     }
+    if (!isPasswordMatch()) {
+      alert("Mật khẩu xác nhận không khớp.");
+      return;
+    }
     try {
       const response = await apiClient.post("auth/register", { email, password, confirmPassword, name, username, dob, phone });
-      const getOtp = await apiClient.get("/auth/get-otp-mail-for-register", { params: { email } });
-      navigate("Activate", { email: email });
+      if (response.status === 201 || response.status === 200) {
+        await apiClient.get("/auth/get-otp-mail-for-register", { params: { email } });
+        navigate("Activate", { email: email });
+      }
     } catch (error: any) {
       if (error.response) {
-        console.error("Lỗi từ server:", error.response.data);
+        //console.error("Lỗi từ server:", error.response.data);
         alert(error.response.data.message);
       } else if (error.request) {
-        console.error("Không nhận được phản hồi từ server:", error.request);
+        //console.error("Không nhận được phản hồi từ server:", error.request);
         alert("Không kết nối được đến server, vui lòng kiểm tra mạng!");
       } else {
-        console.error("Lỗi khác:", error.message);
+        //console.error("Lỗi khác:", error.message);
         alert("Đã xảy ra lỗi, vui lòng thử lại!");
       }
     }

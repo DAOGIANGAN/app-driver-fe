@@ -169,7 +169,7 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
         Alert.alert('Success', 'Đã gửi yêu cầu thành công.');
         onRefresh(); // Refresh data to show updated state
     } catch (error: any) {
-        console.error('Error creating fixed trip request:', error.response ? JSON.stringify(error.response.data) : error.message);
+        //console.error('Error creating fixed trip request:', error.response ? JSON.stringify(error.response.data) : error.message);
         alert(error.response?.data?.message || 'Không thể đăng ký chuyến đi cố định này.');
     }
   };
@@ -187,7 +187,7 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
       Alert.alert('Success', 'Request approved successfully.');
       onRefresh(); // Refresh data
     } catch (error) {
-      console.error('Error approving request:', error);
+      //console.error('Error approving request:', error);
       Alert.alert('Error', 'Could not approve the request.');
     }
   };
@@ -205,7 +205,7 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
       Alert.alert('Success', 'Từ chối yêu cầu thành công.');
       onRefresh(); // Refresh data
     } catch (error) {
-      console.error('Error rejecting request:', error);
+      //console.error('Error rejecting request:', error);
       Alert.alert('Error', 'Could not reject the request.');
     }
   };
@@ -223,7 +223,7 @@ const FixedTrip : React.FC<Props> = ({ navigation }) => {
       Alert.alert('Success', 'Đã xóa lịch cố định thành công.');
       onRefresh(); // Refresh data
     } catch (error) {
-      console.error('Error canceling request:', error);
+      //console.error('Error canceling request:', error);
       Alert.alert('Error', 'Could not cancel the request.');
     }
   };
