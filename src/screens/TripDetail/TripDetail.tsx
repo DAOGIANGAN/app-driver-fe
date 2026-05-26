@@ -138,6 +138,20 @@ const TripDetail: React.FC<Props> = ({ navigation, route }) => {
       // TODO: Gọi API hoặc cập nhật lại UI nếu cần
     });
 
+    // Khi có hành khách được tự động duyệt gửi cho cả room
+    socket.on('userAutoApproved', (data: {tripId: string; userId: string }) => {
+      console.log(userId, data.userId);
+      refreshTrip();
+      // TODO: Điều hướng về trang khác nếu cần
+    });
+
+    // Khi có hành khách được tự động duyệt gửi cho cả room
+    socket.on('userApproved', (data: {tripId: string; userId: string }) => {
+      console.log(userId, data.userId);
+      refreshTrip();
+      // TODO: Điều hướng về trang khác nếu cần
+    });
+
     // Khi chuyến bị hủy, gửi cho cả room
     socket.on('tripCanceled', (data: { message: string; tripId: string; userId: string }) => {
       console.log(userId, data.userId);
@@ -146,7 +160,7 @@ const TripDetail: React.FC<Props> = ({ navigation, route }) => {
       // TODO: Điều hướng về trang khác nếu cần
     });
 
-    // Khi chuyến bị hủy, gửi cho cả room
+    // Khi chuyến hoàn thành, gửi cho cả room
     socket.on('tripCompleted', (data: { message: string; tripId: string; userId: string }) => {
       console.log(userId, data.userId);
       if(userId.toString() !=  data.userId) alert(data.message);
@@ -154,7 +168,7 @@ const TripDetail: React.FC<Props> = ({ navigation, route }) => {
       // TODO: Điều hướng về trang khác nếu cần
     });
 
-    // Khi chuyến bị hủy, gửi cho cả room
+    // Khi rời chuyến gửi cho cả room
     socket.on('tripOut', (data: { message: string; tripId: string; userId: string }) => {
       if(userId.toString() != data.userId) alert(data.message);
       refreshTrip();
